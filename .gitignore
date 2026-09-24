@@ -1,0 +1,6 @@
+warmup-config.json
+warmup-state.json
+warmup.log
+*.tmp
+auth/
+config.yaml
