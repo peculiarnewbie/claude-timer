@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-$taskName = "CLIProxyAPI-Claude-Window"
+$taskName = "claude-timer"
 $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($task) {
 	Unregister-ScheduledTask -TaskName $taskName -Confirm:$false

@@ -9,7 +9,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$taskName = "CLIProxyAPI-Claude-Window"
+$taskName = "claude-timer"
+$legacyTaskName = "CLIProxyAPI-Claude-Window"
 $installDir = Join-Path $env:LOCALAPPDATA "CLIProxyAPI"
 $scriptPath = Join-Path $installDir "warmup.ps1"
 $configPath = Join-Path $installDir "warmup-config.json"
@@ -86,6 +87,9 @@ $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -Repetiti
 $taskSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 $principal = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $taskSettings -Principal $principal -Description "Start Claude five-hour windows with a tiny account-pinned Haiku request." -Force | Out-Null
+if (Get-ScheduledTask -TaskName $legacyTaskName -ErrorAction SilentlyContinue) {
+	Unregister-ScheduledTask -TaskName $legacyTaskName -Confirm:$false
+}
 
 Write-Output "Installed $taskName ($IntervalMinutes-minute ticks)"
 Write-Output "Local config: $configPath"

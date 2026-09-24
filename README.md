@@ -1,6 +1,8 @@
-# Claude window starter for CLIProxyAPI
+# claude-timer
 
-A Windows task that checks each selected Claude subscription's five-hour reset and sends one tiny Haiku request when a new window needs starting. The task wakes every 10 minutes by default, but saved reset times let it skip quota API calls until an account is due. The message goes directly through CLIProxyAPI's account-pinned management API, so it does not create Claude Code chat history.
+Start each Claude subscription's five-hour window with one tiny Haiku request when its previous window resets. The request goes directly through CLIProxyAPI's account-pinned management API, so it does not create Claude Code chat history.
+
+Windows support is in [`windows/`](windows/). Platform setup and usage are documented here at the repo root. The Windows task wakes every 10 minutes by default, but saved reset times let it skip quota API calls until an account is due.
 
 ## Requirements
 
@@ -12,13 +14,13 @@ The repo contains no CLIProxyAPI binary, OAuth credentials, or management key. S
 
 ## Install
 
-Clone this repo, open PowerShell 7, and run:
+Clone this repo, open PowerShell 7.5 or newer, and run from the repo root:
 
 ```powershell
-./install.ps1 -AccountEmails "first@example.com","second@example.com"
+./windows/install.ps1 -AccountEmails "first@example.com","second@example.com"
 ```
 
-The installer checks that both accounts are present in CLIProxyAPI, copies `warmup.ps1` to `%LOCALAPPDATA%\CLIProxyAPI`, writes a local `warmup-config.json`, and registers `CLIProxyAPI-Claude-Window` under your Windows account. It uses T3's local management key if available; otherwise it prompts for the key without echoing it. The config and key remain on that PC. If your proxy uses a different location or port, pass `-ProxyUri`, `-ProxyExecutable`, and `-ProxyConfig`. To set readable account labels, use `-AccountNames "work","personal"`. `-IntervalMinutes` changes the task tick interval.
+The installer checks that both accounts are present in CLIProxyAPI, copies `windows/warmup.ps1` to `%LOCALAPPDATA%\CLIProxyAPI`, writes a local `warmup-config.json`, and registers the `claude-timer` task under your Windows account. It uses T3's local management key if available; otherwise it prompts for the key without echoing it. The config and key remain on that PC. If your proxy uses a different location or port, pass `-ProxyUri`, `-ProxyExecutable`, and `-ProxyConfig`. To set readable account labels, use `-AccountNames "work","personal"`. `-IntervalMinutes` changes the task tick interval.
 
 The task runs while your Windows user is signed in, including when the screen is locked. If the proxy is down and its executable path exists, the task starts it in a hidden window.
 
@@ -26,13 +28,13 @@ The task runs while your Windows user is signed in, including when the screen is
 
 ```powershell
 & "$env:LOCALAPPDATA\CLIProxyAPI\warmup.ps1" -DryRun
-Get-ScheduledTaskInfo -TaskName CLIProxyAPI-Claude-Window
+Get-ScheduledTaskInfo -TaskName claude-timer
 Get-Content "$env:LOCALAPPDATA\CLIProxyAPI\warmup.log" -Tail 20
 ```
 
 `-DryRun` may query quota when an account is due, but never sends a Haiku request or changes saved state. The task persists its next check per account in `warmup-state.json`. When a window is active, it schedules the next check two minutes after the reported reset. If a warmup is attempted, it records the attempt before sending to prevent repeated messages after a timeout. A weekly quota at 100% delays the next check until the weekly reset.
 
-To stop it, run `./uninstall.ps1`. This removes the task and leaves local state and configuration for inspection.
+To stop it, run `./windows/uninstall.ps1`. This removes the task and leaves local state and configuration for inspection.
 
 ## API details
 
