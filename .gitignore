@@ -4,3 +4,4 @@ warmup.log
 *.tmp
 auth/
 config.yaml
+__pycache__/
